@@ -1,0 +1,6 @@
+git init .
+git add .
+git commit -m "Started"
+git push 
+
+PUBLISH site to github pages
