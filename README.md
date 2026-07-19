@@ -1,10 +1,15 @@
 # Stuff Detector
 
-A custom object recognition system built with **TensorFlow/Keras**, **MobileNetV3 transfer learning**, **OpenCV**, and **Flask**.
+Stuff Detector is a custom image classification system built with **TensorFlow/Keras**, **OpenCV**, and **MobileNetV3 transfer learning**.
 
-Stuff Detector uses a pretrained **MobileNetV3-Large** model, removes the original ImageNet classification head, and replaces it with a custom classification head trained to recognize user-defined objects.
+The project uses a pretrained MobileNetV3 model as a feature extractor. The original ImageNet classification head is removed and replaced with a custom classification head trained to recognize user-defined object classes.
 
-The project allows you to train your own object classifier using your own dataset while leveraging powerful pretrained computer vision features.
+The project includes:
+
+- A machine learning pipeline
+- Image and camera processing
+- A Flask API backend
+- A browser-based frontend
 
 ---
 
@@ -12,75 +17,82 @@ The project allows you to train your own object classifier using your own datase
 
 ## Machine Learning
 
-- Transfer learning using MobileNetV3-Large
-- Removed ImageNet classification head
-- Custom classification head trained from scratch
+- MobileNetV3 transfer learning
+- Custom classification head
 - User-defined object classes
 - TensorFlow/Keras model training
+- Image preprocessing pipeline
 - Real-time inference
 
 ## Application
 
-- Webcam image classification
-- Flask REST API backend
-- Browser-based frontend
+- Webcam classification
+- Flask REST API
+- Browser frontend
 - JSON prediction responses
-- Easy dataset expansion
+- Expandable dataset system
 
 ---
 
 # How It Works
 
-The model uses transfer learning.
+Stuff Detector does not train the entire neural network from scratch.
 
-Instead of training an entire neural network from zero, Stuff Detector uses MobileNetV3 as a feature extractor.
+Instead, it uses transfer learning:
 
 ```
 Input Image
      |
      v
-MobileNetV3-Large Backbone
+MobileNetV3 Backbone
      |
      v
-Remove Original ImageNet Head
+Remove Original ImageNet Classification Head
      |
      v
-Custom Classification Head
+Custom Classification Layers
      |
      v
 Object Prediction
 ```
 
-The pretrained layers understand general visual features such as:
-
-- edges
-- textures
-- shapes
-- patterns
-
-The custom classification layers learn how to identify your own objects.
+The pretrained MobileNetV3 layers extract useful visual features while the custom classifier learns to recognize objects from the project's dataset.
 
 ---
 
 # Architecture
 
 ```
-                 MobileNetV3-Large
-                 (Pretrained ImageNet)
+                    Browser
 
-                         |
-                         |
-              Original classifier removed
+                       |
+                       |
+                       v
 
-                         |
-                         v
+              frontend/index.html
 
-              Custom Dense Classifier
+                       |
+                       |
+              HTTP POST /detect
 
-                         |
-                         v
+                       |
+                       v
 
-              User-defined object classes
+               backend/app.py
+
+                       |
+                       |
+              Detection Pipeline
+
+                       |
+                       v
+
+              TensorFlow Model
+
+                       |
+                       v
+
+               Prediction Result
 ```
 
 ---
@@ -90,43 +102,25 @@ The custom classification layers learn how to identify your own objects.
 ```
 Stuff-Detector/
 
+├── requirements.txt
+│
+├── main.py
+├── detector.py
+├── camera.py
+├── image_loader.py
+├── image_shower.py
 │
 ├── backend/
-│   │
-│   ├── app.py
-│   │   Flask API server
-│   │
-│   ├── requirements.txt
-│   │   Python dependencies
-│   │
-│   └── models/
-│       └── stuff_detector.keras
-│           Trained TensorFlow model
+│   └── app.py
 │
 ├── frontend/
 │   └── index.html
-│       Browser webcam interface
 │
 ├── data/
 │   └── images/
-│       Training dataset
 │
-├── detector.py
-│   Model inference logic
-│
-├── camera.py
-│   Camera handling
-│
-├── image_loader.py
-│   Image loading utilities
-│
-├── image_shower.py
-│   Image visualization
-│
-├── main.py
-│   Main application
-│
-└── README.md
+└── models/
+    └── model.keras
 ```
 
 ---
@@ -143,55 +137,22 @@ cd Stuff-Detector
 
 ---
 
-## Create Virtual Environment
-
-Linux/macOS:
-
-```bash
-python3 -m venv venv
-
-source venv/bin/activate
-```
-
-Windows:
-
-```bash
-python -m venv venv
-
-venv\Scripts\activate
-```
-
----
-
 ## Install Dependencies
 
+Install packages from the root requirements file:
+
 ```bash
-pip install -r backend/requirements.txt
+pip install -r requirements.txt
 ```
 
 ---
 
-# Dataset Format
+# Dataset Structure
 
-Training data should be organised by class.
-
-Example:
+Training images are stored inside:
 
 ```
 data/images/
-
-├── bottle/
-│   ├── image1.jpg
-│   ├── image2.jpg
-│   └── image3.jpg
-│
-├── keyboard/
-│   ├── image1.jpg
-│   └── image2.jpg
-│
-└── phone/
-    ├── image1.jpg
-    └── image2.jpg
 ```
 
 Each folder represents a class.
@@ -199,33 +160,33 @@ Each folder represents a class.
 Example:
 
 ```
-data/images/keyboard/
+data/images/
+
+├── keyboard/
+│   ├── image1.jpg
+│   ├── image2.jpg
+│
+├── bottle/
+│   ├── image1.jpg
+│   └── image2.jpg
 ```
 
-creates the class:
-
-```
-keyboard
-```
+The folder name becomes the class label.
 
 ---
 
-# Training
+# Model Training
 
-The training pipeline:
+The training process:
 
-1. Load images from dataset
+1. Load images from the dataset
 2. Resize images
 3. Apply MobileNetV3 preprocessing
 4. Use pretrained MobileNetV3 feature extraction
-5. Train custom classification layers
-6. Save trained model
+5. Train a custom classification head
+6. Save the trained model
 
-The final model is saved as:
-
-```
-backend/models/stuff_detector.keras
-```
+The final model is used during inference.
 
 ---
 
@@ -233,19 +194,13 @@ backend/models/stuff_detector.keras
 
 ## Start Backend
 
-Navigate to backend:
+From the project root:
 
 ```bash
-cd backend
+python backend/app.py
 ```
 
-Run Flask:
-
-```bash
-python app.py
-```
-
-The API starts at:
+The Flask server will start:
 
 ```
 http://localhost:5000
@@ -261,47 +216,55 @@ Open:
 frontend/index.html
 ```
 
-in your browser.
-
-Allow camera permissions.
+in a browser.
 
 The frontend will:
 
-1. Access webcam
+1. Request camera access
 2. Capture frames
 3. Send images to Flask
-4. Display prediction results
+4. Display predictions
 
 ---
 
-# API Documentation
+# Backend API
+
+The Flask backend acts as the bridge between the frontend and the machine learning model.
+
+It handles:
+
+- Receiving images
+- Processing requests
+- Running inference
+- Returning prediction results
+
+---
+
+# API Endpoints
 
 ## Health Check
 
 ### GET /
 
-Request:
+Example:
 
 ```
-GET localhost:5000/
+GET http://localhost:5000/
 ```
 
 Response:
 
 ```json
 {
-    "status": "online",
-    "model": "Stuff Detector"
+    "status": "running"
 }
 ```
 
 ---
 
-# Prediction Endpoint
+## Detect Object
 
-## POST /detect
-
-Classifies an image.
+### POST /detect
 
 Request:
 
@@ -316,7 +279,7 @@ Response:
 ```json
 {
     "label": "keyboard",
-    "confidence": 0.9432
+    "confidence": 0.95
 }
 ```
 
@@ -326,67 +289,38 @@ Response:
 
 To add a new object:
 
-## 1. Add images
+1. Add training images:
+
+```
+data/images/new_object/
+```
 
 Example:
 
 ```
 data/images/mouse/
+
+├── image1.jpg
+├── image2.jpg
+└── image3.jpg
 ```
 
-Add:
+2. Retrain the model.
 
-```
-mouse1.jpg
-mouse2.jpg
-mouse3.jpg
-```
+3. Replace the existing model file.
+
+4. Restart the backend.
 
 ---
 
-## 2. Retrain Model
-
-The classifier must be retrained because the output classes changed.
-
----
-
-## 3. Replace Model
-
-Place the new model:
-
-```
-backend/models/stuff_detector.keras
-```
-
-Restart Flask.
-
----
-
-# Requirements
-
-- Python 3.10+
-- TensorFlow
-- Keras
-- OpenCV
-- Flask
-- NumPy
-- Pillow
-
-Recommended:
-
-- NVIDIA GPU
-- CUDA support
-
----
-
-# Technologies
+# Technologies Used
 
 ## Machine Learning
 
 | Technology | Purpose |
-|-|-|
+|---|---|
 | TensorFlow | Deep learning framework |
-| Keras | Neural network API |
+| Keras | Model building |
 | MobileNetV3 | Feature extractor |
 | OpenCV | Image processing |
 | NumPy | Data processing |
@@ -394,15 +328,15 @@ Recommended:
 ## Backend
 
 | Technology | Purpose |
-|-|-|
-| Flask | REST API |
+|---|---|
+| Flask | API server |
 | Flask-CORS | Frontend communication |
 
 ## Frontend
 
 | Technology | Purpose |
-|-|-|
-| HTML | Interface |
+|---|---|
+| HTML | User interface |
 | JavaScript | Webcam handling |
 | Browser Media API | Camera access |
 
@@ -410,25 +344,23 @@ Recommended:
 
 # Limitations
 
-Current limitations:
-
-- Only classifies the main object
-- Requires retraining for new categories
-- No object bounding boxes
+- Only performs classification, not object detection
+- Requires retraining for new classes
 - Accuracy depends on dataset quality
-- Lighting affects predictions
+- Lighting conditions can affect predictions
+- No bounding box detection
 
 ---
 
 # Future Improvements
 
-- Real-time WebSocket streaming
-- Object detection with bounding boxes
+- Real-time video streaming
+- Better frontend interface
 - Automatic dataset collection
-- Model quantization
+- Model optimization
 - Mobile deployment
-- Better confidence filtering
-- Cloud hosting
+- Object detection with bounding boxes
+- Cloud deployment
 
 ---
 
@@ -448,7 +380,7 @@ Commit changes:
 git commit -m "Add feature"
 ```
 
-Push:
+Push changes:
 
 ```bash
 git push origin feature-name
