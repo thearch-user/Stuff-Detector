@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>
+Stuff Detector
+</title>
+
+
+<style>
+
+body {
+
+    font-family: Arial;
+    text-align:center;
+    background:#111;
+    color:white;
+
+}
+
+
+video {
+
+    width:700px;
+    border-radius:20px;
+
+}
+
+
+#result {
+
+    margin-top:25px;
+    font-size:35px;
+
+}
+
+
+</style>
+
+
+</head>
+
+
+<body>
+
+
+<h1>
+Stuff Detector
+</h1>
+
+
+<video
+id="video"
+autoplay>
+</video>
+
+
+<div id="result">
+Waiting...
+</div>
+
+
+
+<script>
+
+
+const video =
+document.getElementById(
+"video"
+);
+
+
+const result =
+document.getElementById(
+"result"
+);
+
+
+
+navigator.mediaDevices
+.getUserMedia({
+
+    video:true
+
+})
+.then(stream=>{
+
+    video.srcObject =
+    stream;
+
+});
+
+
+
+function capture(){
+
+
+    const canvas =
+    document.createElement(
+    "canvas"
+    );
+
+
+    canvas.width =
+    video.videoWidth;
+
+
+    canvas.height =
+    video.videoHeight;
+
+
+
+    const ctx =
+    canvas.getContext(
+    "2d"
+    );
+
+
+    ctx.drawImage(
+        video,
+        0,
+        0
+    );
+
+
+
+    const image =
+    canvas.toDataURL(
+        "image/jpeg"
+    );
+
+
+
+    fetch(
+        "http://localhost:5000/detect",
+        {
+
+        method:"POST",
+
+        headers:{
+
+            "Content-Type":
+            "application/json"
+
+        },
+
+
+        body:JSON.stringify({
+
+            image:image
+
+        })
+
+        }
+
+    )
+
+    .then(
+        response =>
+        response.json()
+    )
+
+
+    .then(data=>{
+
+
+        result.innerHTML =
+
+        `
+        ${data.label}
+        <br>
+        ${(data.confidence*100).toFixed(2)}%
+        `;
+
+
+    })
+
+    .catch(err=>{
+
+        console.log(err);
+
+    });
+
+
+}
+
+
+
+setInterval(
+capture,
+1000
+);
+
+
+
+</script>
+
+
+</body>
+
+</html>
